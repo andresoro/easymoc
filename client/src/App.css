@@ -3,11 +3,12 @@
   margin: auto;
   min-height: 100vh;
   display: grid;
+  grid-template-columns: 12% 76% 12%;
 }
 
 .header {
   text-align: center;
-  background: #3052e9;
+  background-color: #3052e9;
 }
 
 .content {
