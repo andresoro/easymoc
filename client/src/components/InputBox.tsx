@@ -8,11 +8,11 @@ import 'brace/theme/github';
 const Option = Select.Option;
 
 interface State {
-    endpoint: string;
-    submitted: boolean;
-    httpCode: number;
-    body: string;
-    resp: boolean; // whether request to server returned status OK
+    endpoint?: string;
+    submitted?: boolean;
+    httpCode?: number;
+    body?: string;
+    resp?: boolean; // whether request to server returned status OK
 }
  
 export class InputBox extends React.Component<{}, State> {
@@ -33,20 +33,61 @@ export class InputBox extends React.Component<{}, State> {
         //make request
 
         // if status ok
+        this.setState({submitted: true, resp: true})
         
+    }
+
+    optChange = (value: any) => {
+        this.setState({httpCode: value})
     }
 
 
     render() {
-        return(
-            <Form>
+
+        if (this.state.submitted) {
+            if (this.state.resp) {
+                return (
+                    <Result
+                        status="success"
+                        title="Successfully Purchased Cloud Server ECS!"
+                        subTitle="Order number: 2017182818828182881 Cloud server configuration takes 1-5 minutes, please wait."
+                        extra={[
+                        <Button type="primary" key="console">
+                            Go Console
+                        </Button>,
+                        <Button key="buy">Buy Again</Button>,
+                        ]}
+                    >
+                    </Result>
+                );
+            } else {
+                return (
+                    <Result
+                        status="error"
+                        title="Submission Failed"
+                        subTitle="Please check and modify the following information before resubmitting."
+                        extra={[
+                        <Button type="primary" key="console">
+                            Go Console
+                        </Button>,
+                        <Button key="buy">Buy Again</Button>,
+                        ]}
+                    >   
+                    </Result>
+                );
+            }
+        } else {
+            return (
+                <Form>
                 <div className="select" style={{padding: '10px 0px 10px 0px'}}>
                     <Select
                         showSearch
                         style={{ width: 250 }}
                         placeholder="HTTP Status Code"
                         optionFilterProp="children"
+                        onSelect={(value, event) => this.optChange(value)}
                     >
+                        
                         <Option value={100}>100: Continue</Option>
                         <Option value={101}>101: Switching Protocols</Option>
                         <Option value={102}>102: Processing</Option>
@@ -126,6 +167,7 @@ export class InputBox extends React.Component<{}, State> {
                 </div>
                 
             </Form>
-        );
+            );
+        }
     }
 }
