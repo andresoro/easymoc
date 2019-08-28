@@ -41,6 +41,15 @@ export class InputBox extends React.Component<{}, State> {
         this.setState({httpCode: value})
     }
 
+    clear = () => {
+        this.setState({
+            endpoint: "",
+            submitted: false,
+            httpCode: 0,
+            body: "",
+            resp: false,
+        })
+    }
 
     render() {
 
@@ -52,10 +61,9 @@ export class InputBox extends React.Component<{}, State> {
                         title="Successfully Purchased Cloud Server ECS!"
                         subTitle="Order number: 2017182818828182881 Cloud server configuration takes 1-5 minutes, please wait."
                         extra={[
-                        <Button type="primary" key="console">
-                            Go Console
+                        <Button type="primary" key="console" onClick={() => {this.clear()}}>
+                            New Request
                         </Button>,
-                        <Button key="buy">Buy Again</Button>,
                         ]}
                     >
                     </Result>
