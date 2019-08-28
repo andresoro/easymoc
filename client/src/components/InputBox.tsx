@@ -1,16 +1,39 @@
 import * as React from 'react';
-import { Button, Form, Select } from 'antd';
+import { Button, Form, Select, Result } from 'antd';
 import brace from 'brace';
 import AceEditor from 'react-ace';
 import 'brace/mode/json';
 import 'brace/theme/github';
 
 const Option = Select.Option;
+
+interface State {
+    endpoint: string;
+    submitted: boolean;
+    httpCode: number;
+    body: string;
+    resp: boolean; // whether request to server returned status OK
+}
  
-export class InputBox extends React.Component {
+export class InputBox extends React.Component<{}, State> {
+
+    constructor() {
+        super({});
+
+        this.state = {
+            endpoint: "",
+            submitted: false,
+            httpCode: 0,
+            body: "",
+            resp: false
+        };
+    }
 
     submit = () => {
+        //make request
 
+        // if status ok
+        
     }
 
 
