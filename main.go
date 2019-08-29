@@ -39,7 +39,8 @@ func reponseHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Printf("handling response with id: %s", id)
 		w.WriteHeader(resp.Code)
-		json.NewEncoder(w).Encode(resp.Body)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(resp.Body))
 		return
 	}
 

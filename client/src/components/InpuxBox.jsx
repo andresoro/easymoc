@@ -24,12 +24,13 @@ export class InputBox extends React.Component {
     submit = () => {
 
         let text = this.refs.ace.editor.getValue();
+        console.log(text)
         //make request
-        let body = JSON.stringify(
-            {code: this.state.httpCode, headers: {"Content-Type": "application/json"}, body: text}
-        )
+        let body = {code: this.state.httpCode, headers: {"Content-Type": "application/json"}, body: text};
+
+        console.log(body)
         
-        axios.post('/gimme', body, {headers: {'Content-Type':'application/json'}})
+        axios.post('/gimme', body)
             .then((response) => {
                 this.setState({endpoint: response.data, submitted: true, resp: true})
             })
@@ -76,6 +77,7 @@ export class InputBox extends React.Component {
                         </Button>,
                         ]}
                     >
+                    {this.endpoint}
                     </Result>
                 );
             } else {
