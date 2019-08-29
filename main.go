@@ -34,7 +34,7 @@ func reponseHandler(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set(k, v)
 		}
 		w.WriteHeader(resp.Code)
-		w.Write(resp.Body)
+		json.NewEncoder(w).Encode(resp.Body)
 		return
 	}
 
@@ -57,6 +57,6 @@ func newResponse(w http.ResponseWriter, r *http.Request) {
 
 	// write back generated id
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(id))
+	json.NewEncoder(w).Encode(id)
 	return
 }
