@@ -24,7 +24,6 @@ export class InputBox extends React.Component {
     submit = () => {
 
         let text = this.refs.ace.editor.getValue();
-        console.log(text)
         //make request
         let body = JSON.stringify(
             {code: this.state.httpCode, headers: {"Content-Type": "application/json"}, body: text}
