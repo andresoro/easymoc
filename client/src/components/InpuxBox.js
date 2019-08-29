@@ -1,6 +1,5 @@
 import React from 'react';
 import { Button, Form, Select, Result } from 'antd';
-import brace from 'brace';
 import AceEditor from 'react-ace';
 import 'brace/mode/json';
 import 'brace/theme/github';
@@ -18,15 +17,17 @@ export class InputBox extends React.Component {
             endpoint: "",
             submitted: false,
             httpCode: 0,
-            body: "",
             resp: false
         };
     }
 
     submit = () => {
+
+        let text = this.refs.ace.editor.getValue();
+        console.log(text)
         //make request
         let body = JSON.stringify(
-            {code: this.state.httpCode, headers: {"Content-Type": "application/json"}, body: this.state.body}
+            {code: this.state.httpCode, headers: {"Content-Type": "application/json"}, body: text}
         )
         
         axios.post('/gimme', body, {headers: {'Content-Type':'application/json'}})
@@ -67,10 +68,11 @@ export class InputBox extends React.Component {
             if (this.state.resp) {
                 return (
                     <Result
+                        key="pass"
                         status="success"
                         title="Endpoint successfully created"
                         extra={[
-                        <Button type="primary" key="console" onClick={this.clear}>
+                        <Button key="pass" type="primary" onClick={this.clear}>
                             New Response
                         </Button>,
                         ]}
@@ -80,11 +82,12 @@ export class InputBox extends React.Component {
             } else {
                 return (
                     <Result
+                        key="fail"
                         status="error"
                         title="Submission Failed"
                         subTitle="Please try again in a few moments.."
                         extra={[
-                        <Button type="primary" onClick={this.clear}>
+                        <Button key="fail" type="primary" onClick={this.clear}>
                             New Response
                         </Button>,
                         ]}
@@ -176,6 +179,7 @@ export class InputBox extends React.Component {
                         theme="github"
                         enableBasicAutocompletion={true}
                         height="250px"
+                        ref="ace"
                     />
                 </div>
                 <div className="button">

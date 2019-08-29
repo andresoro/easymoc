@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -14,15 +15,18 @@ var cache = make(map[string]*Response)
 type Response struct {
 	Code    int               `json:"code"`
 	Headers map[string]string `json:"headers"`
-	Body    []byte            `json:"body"`
+	Body    string            `json:"body"`
 }
 
 func main() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/r/{id}", reponseHandler).Methods("GET")
-	r.HandleFunc("/r/", newResponse).Methods("PUT")
+	r.HandleFunc("/gimme", newResponse).Methods("POST")
 
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./client/build/")))
+
+	log.Printf("starting server")
 	http.ListenAndServe(":8080", r)
 }
 
@@ -33,6 +37,7 @@ func reponseHandler(w http.ResponseWriter, r *http.Request) {
 		for k, v := range resp.Headers {
 			w.Header().Set(k, v)
 		}
+		log.Printf("handling response with id: %s", id)
 		w.WriteHeader(resp.Code)
 		json.NewEncoder(w).Encode(resp.Body)
 		return
@@ -47,6 +52,7 @@ func newResponse(w http.ResponseWriter, r *http.Request) {
 	var resp Response
 	err := json.NewDecoder(r.Body).Decode(&resp)
 	if err != nil {
+		log.Printf("error decoding body: %e", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -56,6 +62,7 @@ func newResponse(w http.ResponseWriter, r *http.Request) {
 	cache[id] = &resp
 
 	// write back generated id
+	log.Printf("generated response with id: %s", id)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(id)
 	return
