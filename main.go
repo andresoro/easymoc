@@ -13,9 +13,9 @@ var cache = make(map[string]*Response)
 
 // Response is the data structure we associate with an id
 type Response struct {
-	Code    int               `json:"code"`
-	Headers map[string]string `json:"headers"`
-	Body    string            `json:"body"`
+	Code        int    `json:"code"`
+	ContentType string `json:"content"`
+	Body        string `json:"body"`
 }
 
 func main() {
@@ -34,12 +34,10 @@ func reponseHandler(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 
 	if resp, ok := cache[id]; ok {
-		for k, v := range resp.Headers {
-			w.Header().Set(k, v)
-		}
 		log.Printf("handling response with id: %s", id)
+
 		w.WriteHeader(resp.Code)
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Type", resp.ContentType)
 		w.Write([]byte(resp.Body))
 		return
 	}

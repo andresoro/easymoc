@@ -17,7 +17,7 @@ function App() {
           </div>
 
           <div className="footer">
-            <footer>Test</footer>
+            
           </div>
       </div>
       <div className="col3"></div> 

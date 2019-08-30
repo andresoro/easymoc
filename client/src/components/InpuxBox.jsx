@@ -26,7 +26,7 @@ export class InputBox extends React.Component {
         let text = this.refs.ace.editor.getValue();
         console.log(text)
         //make request
-        let body = {code: this.state.httpCode, headers: {"Content-Type": "application/json"}, body: text};
+        let body = {code: this.state.httpCode, content: this.state.contentType, body: text};
 
         console.log(body)
         
@@ -49,13 +49,14 @@ export class InputBox extends React.Component {
             endpoint: "",
             submitted: false,
             httpCode: 0,
+            contentType: "",
             body: "",
             resp: false,
         })
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        if (this.state.body !== nextState.body) {
+        if (this.state.body !== nextState.body)  {
           return false
         } else {
           return true;
@@ -101,6 +102,21 @@ export class InputBox extends React.Component {
             return (
                 <Form>
                 <div className="select" style={{padding: '10px 0px 10px 0px'}}>
+                    <Select
+                        showSearch
+                        style={{ width: 250, paddingBottom: 10 }}
+                        placeholder="Content Type"
+                        optionFilterProp="children"
+                        onSelect={(value, event) => {this.setState({contentType: value})}}
+                    >
+                    <Option value="application/json">application/json</Option>
+                    <Option value="application/xml">application/xml</Option>
+                    <Option value="application/xhtml">application/xhtml</Option>
+                    <Option value="text/json">text/json</Option>
+                    <Option value="text/plain">text/plain</Option>
+                    <Option value="text/html">text/html</Option>
+                    <Option value="text/csv">text/csv</Option>
+                    </Select>
                     <Select
                         showSearch
                         style={{ width: 250 }}
