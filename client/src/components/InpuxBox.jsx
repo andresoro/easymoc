@@ -12,9 +12,10 @@ export class InputBox extends React.Component {
 
     constructor() {
         super({});
-
+        
         this.state = {
             endpoint: "",
+            uuid: "",
             submitted: false,
             httpCode: 0,
             resp: false
@@ -24,15 +25,14 @@ export class InputBox extends React.Component {
     submit = () => {
 
         let text = this.refs.ace.editor.getValue();
-        console.log(text)
         //make request
         let body = {code: this.state.httpCode, content: this.state.contentType, body: text};
-
-        console.log(body)
         
         axios.post('/gimme', body)
             .then((response) => {
-                this.setState({endpoint: response.data, submitted: true, resp: true})
+                var end = window.location.href + "r/" + response.data;
+                this.setState({endpoint: end, uuid: response.data, submitted: true, resp: true})
+                console.log(response)
             })
             .catch((error) => {
                 this.setState({submitted: true, resp: false})
@@ -73,12 +73,17 @@ export class InputBox extends React.Component {
                         status="success"
                         title="Endpoint successfully created"
                         extra={[
-                        <Button key="pass" type="primary" onClick={this.clear}>
-                            New Response
-                        </Button>,
+                        <div>
+                            <a href={this.state.endpoint}>{this.state.uuid}</a>
+                            <br/>
+                            <Button key="pass" type="primary" onClick={this.clear}>
+                                New Response
+                            </Button>
+                        </div>
+                        
                         ]}
                     >
-                    {this.endpoint}
+                    
                     </Result>
                 );
             } else {

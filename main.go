@@ -63,6 +63,6 @@ func newResponse(w http.ResponseWriter, r *http.Request) {
 	// write back generated id
 	log.Printf("generated response with id: %s", id)
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(id)
+	w.Write([]byte(id))
 	return
 }
