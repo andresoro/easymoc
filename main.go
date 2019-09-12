@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/dgraph-io/badger"
+
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
@@ -20,6 +22,11 @@ type Response struct {
 
 func main() {
 	r := mux.NewRouter()
+	db, err := badger.Open(badger.DefaultOptions("./db"))
+	if err != nil {
+		log.Fatal("err opening db")
+	}
+	defer db.Close()
 
 	r.HandleFunc("/r/{id}", reponseHandler).Methods("GET")
 	r.HandleFunc("/gimme", newResponse).Methods("POST")
