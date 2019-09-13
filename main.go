@@ -22,14 +22,15 @@ type Response struct {
 
 func main() {
 	r := mux.NewRouter()
+
 	db, err := badger.Open(badger.DefaultOptions("./db"))
 	if err != nil {
 		log.Fatal("err opening db")
 	}
 	defer db.Close()
 
-	r.HandleFunc("/r/{id}", reponseHandler).Methods("GET")
-	r.HandleFunc("/gimme", newResponse).Methods("POST")
+	r.HandleFunc("/r/{id}", reponseHandler(db)).Methods("GET")
+	r.HandleFunc("/gimme", newResponse(db)).Methods("POST")
 
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./client/build/")))
 
@@ -37,39 +38,43 @@ func main() {
 	http.ListenAndServe(":8080", r)
 }
 
-func reponseHandler(w http.ResponseWriter, r *http.Request) {
-	id := mux.Vars(r)["id"]
+func reponseHandler(db *badger.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := mux.Vars(r)["id"]
 
-	if resp, ok := cache[id]; ok {
-		log.Printf("handling response with id: %s", id)
+		if resp, ok := cache[id]; ok {
+			log.Printf("handling response with id: %s", id)
 
-		w.WriteHeader(resp.Code)
-		w.Header().Set("Content-Type", resp.ContentType)
-		w.Write([]byte(resp.Body))
-		return
-	}
+			w.WriteHeader(resp.Code)
+			w.Header().Set("Content-Type", resp.ContentType)
+			w.Write([]byte(resp.Body))
+			return
+		}
 
-	w.WriteHeader(http.StatusBadRequest)
-	return
-}
-
-func newResponse(w http.ResponseWriter, r *http.Request) {
-	// read target response from request body
-	var resp Response
-	err := json.NewDecoder(r.Body).Decode(&resp)
-	if err != nil {
-		log.Printf("error decoding body: %e", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+}
 
-	// generate uuid and cache response to handle later
-	id := uuid.New().String()
-	cache[id] = &resp
+func newResponse(db *badger.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// read target response from request body
+		var resp Response
+		err := json.NewDecoder(r.Body).Decode(&resp)
+		if err != nil {
+			log.Printf("error decoding body: %e", err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 
-	// write back generated id
-	log.Printf("generated response with id: %s", id)
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(id))
-	return
+		// generate uuid and cache response to handle later
+		id := uuid.New().String()
+		cache[id] = &resp
+
+		// write back generated id
+		log.Printf("generated response with id: %s", id)
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(id))
+		return
+	}
 }
