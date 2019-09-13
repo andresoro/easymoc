@@ -5,8 +5,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/dgraph-io/badger"
-
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
@@ -21,24 +19,25 @@ type Response struct {
 }
 
 func main() {
+	// router
 	r := mux.NewRouter()
 
-	db, err := badger.Open(badger.DefaultOptions("./db"))
+	// init persistence mechanisms
+	env, err := NewEnv()
 	if err != nil {
-		log.Fatal("err opening db")
+		log.Fatal(err)
 	}
-	defer db.Close()
-
-	r.HandleFunc("/r/{id}", reponseHandler(db)).Methods("GET")
-	r.HandleFunc("/gimme", newResponse(db)).Methods("POST")
-
+	//handlers
+	r.HandleFunc("/r/{id}", reponseHandler(env)).Methods("GET")
+	r.HandleFunc("/gimme", newResponse(env)).Methods("POST")
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./client/build/")))
 
+	// start
 	log.Printf("starting server")
 	http.ListenAndServe(":8080", r)
 }
 
-func reponseHandler(db *badger.DB) http.HandlerFunc {
+func reponseHandler(e *Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := mux.Vars(r)["id"]
 
@@ -56,7 +55,7 @@ func reponseHandler(db *badger.DB) http.HandlerFunc {
 	}
 }
 
-func newResponse(db *badger.DB) http.HandlerFunc {
+func newResponse(e *Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// read target response from request body
 		var resp Response
