@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -23,7 +25,17 @@ func main() {
 	r.HandleFunc("/gimme", newResponse(env)).Methods("POST")
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./client/build/")))
 
-	// start
+	// handle SIGINT
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		for range c {
+			env.Close()
+			os.Exit(0)
+		}
+	}()
+
+	//start server
 	log.Printf("starting server")
 	http.ListenAndServe(":8080", r)
 }

@@ -34,9 +34,6 @@ func NewEnv() (*Env, error) {
 
 	// cache config
 	config := bigcache.DefaultConfig(time.Minute * 5)
-	config.OnRemove = func(key string, entry []byte) {
-		e.WriteDB(key, entry)
-	}
 
 	// cache
 	cache, err := bigcache.NewBigCache(config)
@@ -81,6 +78,10 @@ func (e *Env) Set(id string, resp *Response) error {
 		return err
 	}
 
+	go func() {
+		e.WriteDB(id, data.Bytes())
+	}()
+
 	return nil
 }
 
@@ -115,4 +116,8 @@ func (e *Env) GetDB(key string) (*Response, error) {
 		return nil
 	})
 	return &resp, err
+}
+
+func (e *Env) Close() {
+
 }
