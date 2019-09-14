@@ -1,11 +1,21 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
+	"log"
 	"time"
 
 	"github.com/allegro/bigcache"
 	"github.com/dgraph-io/badger"
 )
+
+// Response is the data structure we associate with an id
+type Response struct {
+	Code        int    `json:"code"`
+	ContentType string `json:"content"`
+	Body        string `json:"body"`
+}
 
 // Env holds persistence mechanisms
 type Env struct {
@@ -16,15 +26,19 @@ type Env struct {
 func NewEnv() (*Env, error) {
 	e := &Env{}
 
+	// persistent db
 	db, err := badger.Open(badger.DefaultOptions("./db"))
 	if err != nil {
 		return nil, err
 	}
 
+	// cache config
 	config := bigcache.DefaultConfig(time.Minute * 5)
 	config.OnRemove = func(key string, entry []byte) {
 		e.WriteDB(key, entry)
 	}
+
+	// cache
 	cache, err := bigcache.NewBigCache(config)
 	if err != nil {
 		return nil, err
@@ -36,6 +50,69 @@ func NewEnv() (*Env, error) {
 	return e, nil
 }
 
-func (e *Env) WriteDB(key string, entry []byte) {
+// Get a resp from cache or db
+func (e *Env) Get(id string) (*Response, error) {
 
+	data, err := e.cache.Get(id)
+	if err != nil {
+		// if entry is not in cache check db
+		if err == bigcache.ErrEntryNotFound {
+			return e.GetDB(id)
+		}
+		return nil, err
+	}
+	log.Println("cache hit")
+	var resp Response
+	err = json.Unmarshal(data, &resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp, nil
+
+}
+
+// Set adds a resp to cache
+func (e *Env) Set(id string, resp *Response) error {
+	data := new(bytes.Buffer)
+	json.NewEncoder(data).Encode(resp)
+	err := e.cache.Set(id, data.Bytes())
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// WriteDB writes to filesystem
+func (e *Env) WriteDB(key string, resp []byte) error {
+	return e.db.Update(func(txn *badger.Txn) error {
+		return txn.Set([]byte(key), resp)
+	})
+}
+
+func (e *Env) GetDB(key string) (*Response, error) {
+
+	var resp Response
+	err := e.db.View(func(txn *badger.Txn) error {
+
+		item, err := txn.Get([]byte(key))
+		if err != nil {
+			return err
+		}
+
+		err = item.Value(func(val []byte) error {
+			log.Println("db hit")
+			err := json.Unmarshal(val, &resp)
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return &resp, err
 }
