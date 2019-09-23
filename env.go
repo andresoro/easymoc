@@ -104,7 +104,15 @@ func (e *Env) GetDB(key string) (*Response, error) {
 
 		err = item.Value(func(val []byte) error {
 			log.Println("db hit")
-			err := json.Unmarshal(val, &resp)
+			log.Println("writing to cache")
+
+			// write to cache
+			err := e.cache.Set(key, val)
+			if err != nil {
+				return err
+			}
+
+			err = json.Unmarshal(val, &resp)
 			if err != nil {
 				return err
 			}
@@ -115,9 +123,11 @@ func (e *Env) GetDB(key string) (*Response, error) {
 		}
 		return nil
 	})
+
 	return &resp, err
 }
 
 func (e *Env) Close() {
-
+	e.db.Close()
+	e.cache.Close()
 }
