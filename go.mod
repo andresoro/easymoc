@@ -1,4 +1,4 @@
-module github.com/andresoro/mocky
+module github.com/andresoro/easymock
 
 go 1.12
 

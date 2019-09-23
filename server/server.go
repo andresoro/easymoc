@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -12,12 +14,13 @@ import (
 type Server struct {
 	db     *Env
 	router *mux.Router
+	srv    *http.Server
 }
 
 // New server instance
-func New(static string) (*Server, error) {
+func New(static string, db string) (*Server, error) {
 	r := mux.NewRouter()
-	e, err := NewEnv()
+	e, err := NewEnv(db)
 	if err != nil {
 		return nil, err
 	}
@@ -26,7 +29,9 @@ func New(static string) (*Server, error) {
 	r.HandleFunc("/gimme", newResponse(e)).Methods("POST")
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir(static)))
 
-	return &Server{db: e, router: r}, nil
+	srv := &http.Server{Addr: ":8080", Handler: r}
+
+	return &Server{db: e, router: r, srv: srv}, nil
 
 }
 
@@ -36,14 +41,19 @@ func (s *Server) Run() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
-			env.Close()
+			s.db.Close()
 			os.Exit(0)
 		}
 	}()
 
 	//start server
 	log.Printf("starting server")
-	http.ListenAndServe(":8080", r)
+	s.srv.ListenAndServe()
+}
+
+func (s *Server) ShutDown() {
+	s.db.Close()
+	s.srv.Shutdown(nil)
 }
 
 func reponseHandler(e *Env) http.HandlerFunc {

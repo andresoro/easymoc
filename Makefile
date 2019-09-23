@@ -1,6 +1,8 @@
-run: build
-	./mocky
+run: build build-ui
+	./easymock
 
 build:
-	yarn --cwd client build
 	go build .
+
+build-ui:
+	yarn --cwd client build

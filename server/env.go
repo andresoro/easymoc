@@ -23,11 +23,11 @@ type Env struct {
 	cache *bigcache.BigCache
 }
 
-func NewEnv() (*Env, error) {
+func NewEnv(path string) (*Env, error) {
 	e := &Env{}
 
 	// persistent db
-	db, err := badger.Open(badger.DefaultOptions("./db"))
+	db, err := badger.Open(badger.DefaultOptions(path))
 	if err != nil {
 		return nil, err
 	}
