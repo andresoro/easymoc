@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
-	"os/signal"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -36,16 +34,6 @@ func New(static string, db string) (*Server, error) {
 }
 
 func (s *Server) Run() {
-	// handle SIGINT
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	go func() {
-		for range c {
-			s.db.Close()
-			os.Exit(0)
-		}
-	}()
-
 	//start server
 	log.Printf("starting server")
 	s.srv.ListenAndServe()
