@@ -55,8 +55,8 @@ func reponseHandler(e *Env) http.HandlerFunc {
 		}
 		log.Printf("handling response with id: %s", id)
 
-		w.WriteHeader(resp.Code)
 		w.Header().Set("Content-Type", resp.ContentType)
+		w.WriteHeader(resp.Code)
 		w.Write([]byte(resp.Body))
 		return
 	}
