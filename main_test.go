@@ -64,18 +64,19 @@ func TestServer(t *testing.T) {
 					t.Fatalf("error making request: %e", err)
 				}
 
-				// read id from response body
+				// read id from response body, corresonds to new endpoint
 				bodyBytes, err := ioutil.ReadAll(resp.Body)
 				if err != nil {
 					t.Fatal("unable to read creation response body")
 				}
 				id := string(bodyBytes)
 
-				// test newly created endpoint
+				// make request to newly created endpoint
 				url := fmt.Sprintf("http://localhost:8080/r/%s", id)
 
 				req, _ = http.NewRequest(http.MethodGet, url, nil)
 
+				// resp from the endpoint that was created
 				resp, err = client.Do(req)
 				if err != nil {
 					t.Error(err)
@@ -85,12 +86,14 @@ func TestServer(t *testing.T) {
 					t.Error("not getting proper status code")
 				}
 
+				// ensure content type is the one that was set
 				contentType := strings.Split(resp.Header.Get("Content-Type"), ";")[0]
 
 				if contentType != ctype {
 					t.Errorf("incorrect content-type got: %s", contentType)
 				}
 
+				// ensure body is the one that was set
 				bodyBytes, err = ioutil.ReadAll(resp.Body)
 				if err != nil {
 					t.Error(err)
