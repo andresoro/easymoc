@@ -76,7 +76,7 @@ func TestServer(t *testing.T) {
 
 				req, _ = http.NewRequest(http.MethodGet, url, nil)
 
-				// resp from the endpoint that was created
+				// response from the endpoint that was created
 				resp, err = client.Do(req)
 				if err != nil {
 					t.Error(err)

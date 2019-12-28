@@ -1,7 +1,9 @@
-run: build build-ui
+run: build
 	./easymock
 
-build:
+build: build-ui build-server
+
+build-server:
 	go build .
 
 build-ui:
